@@ -31,6 +31,7 @@ export const ModelSelector = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const optionsRef = useRef<(HTMLDivElement | null)[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -152,6 +153,23 @@ export const ModelSelector = ({
       }
     }
   }, [providerList, provider, setProvider, modelList, setModel]);
+
+  const handleRetry = async () => {
+    try {
+      const response = await fetch('/vscode-lm/models', {
+        method: 'GET',
+        cache: 'no-cache',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to connect to the VS Code extension');
+      }
+
+      setConnectionError(null);
+    } catch (error) {
+      setConnectionError('Could not connect to the VS Code Language Model bridge. Ensure the VS Code extension is running and Bolt.DIY is started.');
+    }
+  };
 
   if (providerList.length === 0) {
     return (
@@ -307,6 +325,18 @@ export const ModelSelector = ({
           </div>
         )}
       </div>
+
+      {connectionError && (
+        <div className="mt-2 p-4 rounded-lg border border-red-500 bg-red-100 text-red-700">
+          <p>{connectionError}</p>
+          <button
+            onClick={handleRetry}
+            className="mt-2 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all"
+          >
+            Retry
+          </button>
+        </div>
+      )}
     </div>
   );
 };
