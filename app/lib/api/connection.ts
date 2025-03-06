@@ -22,6 +22,7 @@ export const checkConnection = async (): Promise<ConnectionStatus> => {
       '/api/health',
       '/', // Fallback to root route
       '/favicon.ico', // Another common fallback
+      '/vscode-lm/models', // Added endpoint for VS Code extension health check
     ];
 
     let latency = 0;
@@ -59,5 +60,19 @@ export const checkConnection = async (): Promise<ConnectionStatus> => {
       latency: 0,
       lastChecked: new Date().toISOString(),
     };
+  }
+};
+
+export const checkVSCodeExtensionConnection = async (): Promise<boolean> => {
+  try {
+    const response = await fetch('/vscode-lm/models', {
+      method: 'GET',
+      cache: 'no-cache',
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error('VS Code extension connection check failed:', error);
+    return false;
   }
 };
